@@ -2,11 +2,12 @@ from __future__ import annotations
 from pathlib import Path
 import pySPM
 import numpy as np
-import logging
+from AFMReader.logging import logger
+import matplotlib.colors as colors
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
+
 
 def spm_pixel_to_nm_scaling(filename: str, channel_data: pySPM.SPM.SPM_image) -> float:
     """
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         
         # Display the image using matplotlib
         import matplotlib.pyplot as plt
-        plt.imshow(image, cmap='gray')
+        plt.imshow(image, cmap=AFM)
         plt.colorbar(label='Height (nm)')
         plt.show()
     except Exception as e:

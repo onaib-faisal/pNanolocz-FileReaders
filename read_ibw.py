@@ -4,6 +4,10 @@ import numpy as np
 from igor2 import binarywave
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.colors as colors
+
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
 
 def _ibw_pixel_to_nm_scaling(scan: dict) -> float:
     """
@@ -107,13 +111,13 @@ if __name__ == "__main__":
         # Check if the image is 2D or 3D
         if im.ndim == 2:
             # Single frame case
-            plt.imshow(im, cmap='gray')
+            plt.imshow(im, cmap=AFM)
             plt.colorbar(label='Height (nm)')
             plt.show()
         elif im.ndim == 3:
             # Multi-frame case
             fig, ax = plt.subplots()
-            frame_image = ax.imshow(im[:, :, 0], cmap=metadata['ColorMap 1'])
+            frame_image = ax.imshow(im[:, :, 0], cmap=metadata[AFM])
 
             # Create the animation
             ani = animation.FuncAnimation(fig, update_frame, frames=im.shape[2], fargs=(im, frame_image), interval=50, blit=True)

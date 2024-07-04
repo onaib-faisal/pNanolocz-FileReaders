@@ -1,6 +1,10 @@
 import numpy as np
 from pathlib import Path
 import tifffile
+import matplotlib.colors as colors
+
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
 
 def _jpk_pixel_to_nm_scaling(tiff_page: tifffile.tifffile.TiffPage) -> float:
     length = tiff_page.tags["32834"].value  # Grid-uLength (fast)
@@ -52,7 +56,10 @@ def load_jpk(file_path: Path | str, channel: str) -> tuple[np.ndarray, float, di
         metadata = extract_metadata(metadata_page)
         scaling_factor = _jpk_pixel_to_nm_scaling(metadata_page)
 
-    return image, scaling_factor, metadata
+         # Rotate the image 90 degrees clockwise
+        image_flipped = np.flipud(image)
+
+    return image_flipped, scaling_factor, metadata
 
 if __name__ == "__main__":
     file_path = 'data/save-2023.02.16-12.08.49.026.jpk'
@@ -64,7 +71,7 @@ if __name__ == "__main__":
         print("Metadata:", metadata)
 
         import matplotlib.pyplot as plt
-        plt.imshow(image, cmap='gray')
+        plt.imshow(image, cmap=AFM)
         plt.colorbar(label='Height (nm)')
         plt.show()
     except Exception as e:
