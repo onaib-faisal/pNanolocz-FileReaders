@@ -1,6 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.colors as colors
+from numpy import roll
+
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
 
 def read_int(file, dtype='int32', count=1):
     return np.fromfile(file, dtype=np.dtype(dtype).newbyteorder('<'), count=count)[0]
@@ -18,8 +23,9 @@ def read_char(file, count=1):
 def skip_bytes(file, count):
     file.seek(count, 1)
 
-def update_frame(frame_number):
-    frame_image.set_data(im[:, :, frame_number])
+def update_frame(frame_number, shift):
+    shifted_frame = roll(im_rotated[:, :, frame_number], shift, axis=1)
+    frame_image.set_data(shifted_frame)
     return frame_image,
 
 def open_asd(file_path: str):
@@ -105,29 +111,35 @@ def open_asd(file_path: str):
 
         im = -preIm / 205 * header['zExtCoef']
         im = np.flip(im, axis=0)
+        
+        # Rotate the image 90 degrees clockwise
+        im_rotated = np.rot90(im, k=-1, axes=(0, 1))
     
-    return im, header
+    return im_rotated, header
 
 if __name__ == "__main__":
     file_path = 'data/070920180003.asd'
-    im, header = open_asd(file_path)
+    im_rotated, header = open_asd(file_path)
 
-    # Do something with the image (im) and header
+    # Do something with the rotated image (im_rotated) and header
     print("Header: ", header)
-    print("Image shape: ", im.shape)
+    print("Rotated Image shape: ", im_rotated.shape)
 
-    if im.ndim == 2:
+    shift = 207  # Number of pixels to shift the image
+
+    if im_rotated.ndim == 2:
         # Single frame case
-        plt.imshow(im, cmap='gray')
+        shifted_image = roll(im_rotated, shift, axis=1)
+        plt.imshow(shifted_image, cmap=AFM)
         plt.colorbar(label='Height (nm)')
         plt.show()
-    elif im.ndim == 3:
+    elif im_rotated.ndim == 3:
         # Multi-frame case
         fig, ax = plt.subplots()
-        frame_image = ax.imshow(im[:, :, 0], cmap='gray')
+        frame_image = ax.imshow(im_rotated[:, :, 0], cmap=AFM)
 
         # Create the animation
-        ani = animation.FuncAnimation(fig, update_frame, frames=im.shape[2], interval=50, blit=True)
+        ani = animation.FuncAnimation(fig, update_frame, frames=im_rotated.shape[2], fargs=(shift,), interval=50, blit=True)
 
         # Display the animation
         plt.show()
