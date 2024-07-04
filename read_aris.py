@@ -4,6 +4,10 @@ import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.colors as colors
+
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -168,7 +172,7 @@ def open_aris(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
 
 if __name__ == "__main__":
     file_path = 'data/00T2_P3_0000.ARIS'
-    channel = 'HeightTrace'  # Replace with the appropriate channel name
+    channel = 'AmplitudeRetrace'  # Replace with the appropriate channel name
     try:
         image, info = open_aris(file_path, channel)
         print(f"Metadata: {info}")
@@ -176,12 +180,12 @@ if __name__ == "__main__":
         
         # Display the image using matplotlib
         if image.ndim == 2:
-            plt.imshow(image, cmap='gray')
+            plt.imshow(image, cmap=AFM)
             plt.colorbar(label='Height (nm)')
             plt.show()
         elif image.ndim == 3:
             fig, ax = plt.subplots()
-            frame_image = ax.imshow(image[:, :, 0], cmap='gray')
+            frame_image = ax.imshow(image[:, :, 0], cmap=AFM)
 
             def update_frame(frame_number):
                 frame_image.set_data(image[:, :, frame_number])
