@@ -23,12 +23,12 @@ def read_char(file, count=1):
 def skip_bytes(file, count):
     file.seek(count, 1)
 
-def update_frame(frame_number, shift):
+def update_frame(frame_number, shift, im_rotated):
     shifted_frame = roll(im_rotated[:, :, frame_number], shift, axis=1)
     frame_image.set_data(shifted_frame)
     return frame_image,
 
-def open_asd(file_path: str):
+def open_asd(file_path: str, channel: int = 1):
     header = {}
 
     with open(file_path, 'rb') as asd_file:
@@ -74,8 +74,8 @@ def open_asd(file_path: str):
         header['operName'] = read_char(asd_file, header['operationNameSize'])
         # header['comment'] = read_char(asd_file, header['commentSize'])
 
-        # Debug print for header values
-        # print("Header:", header)
+        # Determine which data type to read based on the selected channel
+        data_type = header['dataTypeCh1'] if channel == 1 else header['dataTypeCh2']
 
         # Reading frame data
         valid_frames = 0
@@ -95,9 +95,6 @@ def open_asd(file_path: str):
             # Read frame data
             frame_size = header['xPixel'] * header['yPixel']
             sub = np.fromfile(asd_file, dtype=np.dtype('int16').newbyteorder('<'), count=frame_size)
-
-            # Debug print for frame size and data
-            # print(f"Frame {k}: Expected size = {frame_size}, Read size = {sub.size}")
 
             if sub.size != frame_size:
                 print(f"Frame {k}: Skipping incomplete frame. Expected {frame_size}, got {sub.size}")
@@ -119,7 +116,8 @@ def open_asd(file_path: str):
 
 if __name__ == "__main__":
     file_path = 'data/070920180003.asd'
-    im_rotated, header = open_asd(file_path)
+    channel = 2  # Set the channel to 1 or 2
+    im_rotated, header = open_asd(file_path, channel)
 
     # Do something with the rotated image (im_rotated) and header
     print("Header: ", header)
@@ -139,7 +137,7 @@ if __name__ == "__main__":
         frame_image = ax.imshow(im_rotated[:, :, 0], cmap=AFM)
 
         # Create the animation
-        ani = animation.FuncAnimation(fig, update_frame, frames=im_rotated.shape[2], fargs=(shift,), interval=50, blit=True)
+        ani = animation.FuncAnimation(fig, update_frame, frames=im_rotated.shape[2], fargs=(shift, im_rotated), interval=50, blit=True)
 
         # Display the animation
         plt.show()
