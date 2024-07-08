@@ -172,7 +172,7 @@ def open_aris(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
 
 if __name__ == "__main__":
     file_path = 'data/00T2_P3_0000.ARIS'
-    channel = 'AmplitudeRetrace'  # Replace with the appropriate channel name
+    channel = 'HeightTrace'  # Replace with the appropriate channel name
     try:
         image, info = open_aris(file_path, channel)
         print(f"Metadata: {info}")
