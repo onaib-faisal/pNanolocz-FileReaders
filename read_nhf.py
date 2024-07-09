@@ -81,8 +81,6 @@ def open_nhf(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
 
         im = np.rot90(im, k=1, axes=(0, 1))
         im = np.fliplr(im)
-        
-
 
     return im, s
 

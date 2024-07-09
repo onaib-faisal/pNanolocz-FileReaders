@@ -71,7 +71,7 @@ def read_datafield(f, size):
     datafield['data'] = data
     return datafield
 
-def open_gwychannel(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
+def open_gwy(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
     """
     Extract image and metadata from the GWY file.
 
@@ -138,10 +138,8 @@ def open_gwychannel(file_path: Path | str, channel: str) -> tuple[np.ndarray, di
 
             logger.info(f"Metadata: {meta}")
 
-            #images = np.fliplr(images)
-            images = np.flip(images)
-
-            # images = np.rot90(images, k=-2, axes=(0, 1))
+            # Flip the image vertically
+            images = [np.flipud(image) for image in images]
 
             return images, meta
 
@@ -159,12 +157,10 @@ if __name__ == "__main__":
     file_path = 'data/SBS-PS_example_data.gwy'
     channel = '1'  # Replace with the appropriate channel name
     try:
-        images, meta = open_gwychannel(file_path, channel)
+        images, meta = open_gwy(file_path, channel)
         print(f"Metadata: {meta}")
         for i, img in enumerate(images):
             print(f"Channel {i} image shape: {img.shape}")
-        
-        print(len(images))
 
         # Display the image using matplotlib
         if len(images) == 1:

@@ -29,7 +29,7 @@ def extract_metadata(tiff_page: tifffile.tifffile.TiffPage) -> dict:
     }
     return metadata
 
-def load_jpk(file_path: Path | str, channel: str) -> tuple[np.ndarray, float, dict]:
+def open_jpk(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
     file_path = Path(file_path)
     with tifffile.TiffFile(file_path) as tif:
         channel_list = {}
@@ -55,18 +55,19 @@ def load_jpk(file_path: Path | str, channel: str) -> tuple[np.ndarray, float, di
         metadata_page = tif.pages[0]
         metadata = extract_metadata(metadata_page)
         scaling_factor = _jpk_pixel_to_nm_scaling(metadata_page)
+        metadata['scaling_factor'] = scaling_factor
 
-         # Rotate the image 90 degrees clockwise
+        # Rotate the image 90 degrees clockwise
         image_flipped = np.flipud(image)
 
-    return image_flipped, scaling_factor, metadata
+    return image_flipped, metadata
 
 if __name__ == "__main__":
     file_path = 'data/save-2023.02.16-12.08.49.026.jpk'
     channel = 'height_trace'  # Replace with the appropriate channel name
     try:
-        image, scaling_factor, metadata = load_jpk(file_path, channel)
-        print(f"Scaling factor: {scaling_factor} nm/pixel")
+        image, metadata = open_jpk(file_path, channel)
+        print(f"Scaling factor: {metadata['scaling_factor']} nm/pixel")
         print(f"Image shape: {image.shape}")
         print("Metadata:", metadata)
 

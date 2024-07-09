@@ -2,12 +2,15 @@ from __future__ import annotations
 from pathlib import Path
 import pySPM
 import numpy as np
-from AFMReader.logging import logger
+import logging
 import matplotlib.colors as colors
 
 AFM = np.load('AFM_cmap.npy')
 AFM = colors.ListedColormap(AFM)
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def spm_pixel_to_nm_scaling(filename: str, channel_data: pySPM.SPM.SPM_image) -> float:
     """
@@ -40,7 +43,7 @@ def spm_pixel_to_nm_scaling(filename: str, channel_data: pySPM.SPM.SPM_image) ->
     logger.info(f"[{filename}] : Pixel to nm scaling : {pixel_to_nm_scaling}")
     return pixel_to_nm_scaling
 
-def load_spm(file_path: Path | str, channel: str) -> tuple[np.ndarray, float]:
+def open_spm(file_path: Path | str, channel: str) -> tuple[np.ndarray, dict]:
     """
     Extract image and pixel to nm scaling from the Bruker .spm file.
 
@@ -53,8 +56,8 @@ def load_spm(file_path: Path | str, channel: str) -> tuple[np.ndarray, float]:
 
     Returns
     -------
-    tuple[np.ndarray, float]
-        A tuple containing the image and its pixel to nanometre scaling value.
+    tuple[np.ndarray, dict]
+        A tuple containing the image and its metadata including pixel to nanometre scaling value.
 
     Raises
     ------
@@ -91,16 +94,22 @@ def load_spm(file_path: Path | str, channel: str) -> tuple[np.ndarray, float]:
             raise ValueError(f"{channel} not in {file_path.suffix} channel list: {labels}") from e
         raise e
 
-    return (image, spm_pixel_to_nm_scaling(filename, channel_data))
+    scaling_factor = spm_pixel_to_nm_scaling(filename, channel_data)
+    metadata = {
+        'scaling_factor': scaling_factor,
+        'channel': channel,
+    }
+
+    return image, metadata
 
 if __name__ == "__main__":
     file_path = 'data/0.0_00014.spm'
     channel = 'Height Sensor'  # Replace with the appropriate channel name
     try:
-        image, pixel_to_nm = load_spm(file_path, channel)
-        print(f"Pixel to nm scaling: {pixel_to_nm} nm/pixel")
+        image, metadata = open_spm(file_path, channel)
+        print(f"Pixel to nm scaling: {metadata['scaling_factor']} nm/pixel")
         print(f"Image shape: {image.shape}")
-        
+
         # Display the image using matplotlib
         import matplotlib.pyplot as plt
         plt.imshow(image, cmap=AFM)
