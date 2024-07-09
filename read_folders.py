@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import logging
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from read_nhf import open_nhf
@@ -8,6 +9,10 @@ from read_jpk import open_jpk
 from read_ibw import open_ibw
 from read_spm import open_spm
 from read_gwy import open_gwy
+import matplotlib.colors as colors
+
+AFM = np.load('AFM_cmap.npy')
+AFM = colors.ListedColormap(AFM)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +55,7 @@ class ImageLoader:
             if self._dominant_format == '.nhf':
                 im, meta = open_nhf(file_path, 'Topography')
             elif self._dominant_format == '.jpk':
-                im, meta = open_jpk(file_path, 1)
+                im, meta = open_jpk(file_path, "height_trace")
             elif self._dominant_format == '.ibw':
                 im, meta = open_ibw(file_path, 1)
             elif self._dominant_format == '.spm':
@@ -70,7 +75,7 @@ class ImageLoader:
 
     def play_images(self):
         fig, ax = plt.subplots()
-        im = ax.imshow(self._images[0], animated=True)
+        im = ax.imshow(self._images[0], animated=True, cmap = AFM)
 
         def updatefig(i):
             im.set_array(self._images[i])
@@ -80,6 +85,6 @@ class ImageLoader:
         plt.show()
 
 if __name__ == "__main__":
-    folder_path = 'data/'  # Replace with folder path
+    folder_path = 'data/Streptavidin imaging-12.08.46.399'  # Replace with folder path
     image_loader = ImageLoader(folder_path)
     image_loader.play_images()
