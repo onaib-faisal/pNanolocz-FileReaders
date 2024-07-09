@@ -51,7 +51,7 @@ Codes for opening the following file formats: .aris, folder with multiple files,
 
 ## Repository
 
-For more information and the latest updates, please visit the pNanoLocz File Openers [GitHub repository](https://github.com/your-repo-link).
+For more information and the latest updates, please visit the pNanoLocz File Openers [GitHub repository](https://github.com/onaib-faisal/pNanolocz-FileReaders).
 
 ## Contact
 
